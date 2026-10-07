@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title></title>
+<style>
+:root {
+  color-scheme: light dark;
+  --card-bg: #eaf3fb;
+  --card-border: #d6e6f5;
+  --text: #26445f;
+  --digit-bg: #1e3a5f;
+  --digit-text: #eaf3fb;
+  --digit-shadow: rgba(30, 58, 95, 0.35);
+  --midline: rgba(255,255,255,0.12);
+  --btn-border: #bdd2e5;
+  --digit-w: 44px;
+  --digit-h: 64px;
+  --digit-fs: 36px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-bg: #233444;
+    --card-border: #354b60;
+    --text: #dcecf9;
+    --digit-bg: #0f1c2e;
+    --digit-text: #dcecf9;
+    --digit-shadow: rgba(0,0,0,0.5);
+    --midline: rgba(255,255,255,0.08);
+    --btn-border: #4a6a85;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: transparent;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+}
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 10px;
+}
+.card {
+  width: 100%;
+  max-width: 440px;
+  padding: 16px 18px 16px;
+  border-radius: 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  text-align: center;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  min-height: 22px;
+}
+.day {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  opacity: 0.85;
+  text-align: left;
+}
+.moon {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  opacity: 0.9;
+  text-align: right;
+}
+.moon .icon {
+  font-size: 16px;
+  line-height: 1;
+}
+.clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.group {
+  display: flex;
+  gap: 4px;
+}
+.digit {
+  position: relative;
+  width: var(--digit-w);
+  height: var(--digit-h);
+  font-size: var(--digit-fs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  border-radius: 7px;
+  background: var(--digit-bg);
+  color: var(--digit-text);
+  box-shadow: 0 4px 10px var(--digit-shadow);
+  perspective: 300px;
+}
+.digit .static-top,
+.digit .static-bottom,
+.digit .flip {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+}
+.digit .static-top {
+  top: 0;
+  border-radius: 7px 7px 0 0;
+  z-index: 1;
+}
+.digit .static-bottom {
+  bottom: 0;
+  border-radius: 0 0 7px 7px;
+  z-index: 1;
+}
+.digit .static-top .num,
+.digit .static-bottom .num,
+.digit .flip .num {
+  display: block;
+  width: 100%;
+  height: var(--digit-h);
+  line-height: var(--digit-h);
+  text-align: center;
+}
+.digit .static-bottom .num {
+  margin-top: calc(var(--digit-h) / -2);
+}
+.digit::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--midline);
+  z-index: 10;
+  pointer-events: none;
+}
+.digit .flip {
+  top: 0;
+  transform-origin: bottom center;
+  transform-style: preserve-3d;
+  z-index: 5;
+  border-radius: 7px 7px 0 0;
+  background: var(--digit-bg);
+  backface-visibility: hidden;
+}
+.digit.animating .flip {
+  animation: flipDown 0.5s ease-in forwards;
+}
+@keyframes flipDown {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(-180deg); }
+}
+.sep {
+  font-size: 30px;
+  font-weight: 500;
+  opacity: 0.65;
+  padding: 0 1px;
+  line-height: var(--digit-h);
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.2; }
+}
+.ampm {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  margin-top: 6px;
+  opacity: 0.75;
+  min-height: 15px;
+}
+.date {
+  font-size: 12px;
+  margin-top: 8px;
+  opacity: 0.9;
+}
+button {
+  margin-top: 14px;
+  background: transparent;
+  color: inherit;
+  border: 1px solid var(--btn-border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11px;
+  cursor: pointer;
+}
+button:hover { opacity: 0.85; }
+@media (max-width: 380px) {
+  :root {
+    --digit-w: 34px;
+    --digit-h: 50px;
+    --digit-fs: 28px;
+  }
+  .sep { font-size: 24px; }
+  .moon .name { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="day" id="day"></div>
+    <div class="moon" id="moon">
+      <span class="icon" id="moon-icon"></span>
+      <span class="name" id="moon-name"></span>
+    </div>
+  </div>
+  <div class="clock" id="clock" aria-live="polite">
+    <div class="group" id="hours"></div>
+    <span class="sep">:</span>
+    <div class="group" id="minutes"></div>
+    <span class="sep">:</span>
+    <div class="group" id="seconds"></div>
+  </div>
+  <div class="ampm" id="ampm"></div>
+  <div class="date" id="date"></div>
+  <button id="switch" type="button">Use 24-Hour Time</button>
+</div>
+<script>
+(function () {
+  let twelve = true;
+  const digitEls = {};
+
+  function createDigit(id) {
+    const el = document.createElement("div");
+    el.className = "digit";
+    el.id = id;
+    el.innerHTML =
+      '<div class="static-top"><span class="num">0</span></div>' +
+      '<div class="static-bottom"><span class="num">0</span></div>' +
+      '<div class="flip"><span class="num">0</span></div>';
+    return el;
+  }
+
+  ["h0","h1"].forEach(id => {
+    const d = createDigit(id);
+    document.getElementById("hours").appendChild(d);
+    digitEls[id] = { el: d, value: "0" };
+  });
+  ["m0","m1"].forEach(id => {
+    const d = createDigit(id);
+    document.getElementById("minutes").appendChild(d);
+    digitEls[id] = { el: d, value: "0" };
+  });
+  ["s0","s1"].forEach(id => {
+    const d = createDigit(id);
+    document.getElementById("seconds").appendChild(d);
+    digitEls[id] = { el: d, value: "0" };
+  });
+
+  function setDigit(key, newVal, animate) {
+    const item = digitEls[key];
+    if (!item) return;
+    const el = item.el;
+    const oldVal = item.value;
+    if (oldVal === newVal) return;
+
+    const staticTop = el.querySelector(".static-top .num");
+    const staticBottom = el.querySelector(".static-bottom .num");
+    const flipNum = el.querySelector(".flip .num");
+
+    if (!animate) {
+      staticTop.textContent = newVal;
+      staticBottom.textContent = newVal;
+      flipNum.textContent = newVal;
+      item.value = newVal;
+      return;
+    }
+
+    flipNum.textContent = oldVal;
+    staticTop.textContent = newVal;
+
+    el.classList.remove("animating");
+    void el.offsetWidth;
+    el.classList.add("animating");
+
+    const onEnd = () => {
+      staticBottom.textContent = newVal;
+      flipNum.textContent = newVal;
+      el.classList.remove("animating");
+      const flip = el.querySelector(".flip");
+      flip.style.animation = "none";
+      void flip.offsetWidth;
+      flip.style.animation = "";
+      item.value = newVal;
+    };
+    el.querySelector(".flip").addEventListener("animationend", onEnd, { once: true });
+  }
+
+  function pad2(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+
+  function getMoonPhase(date) {
+    const knownNew = Date.UTC(2000, 0, 6, 18, 14, 0);
+    const synodic = 29.530588853;
+    const msPerDay = 86400000;
+    const days = (date.getTime() - knownNew) / msPerDay;
+    const age = ((days % synodic) + synodic) % synodic;
+    const phase = age / synodic;
+
+    const phases = [
+      { name: "New Moon",        icon: "🌑", min: 0.00,  max: 0.0625 },
+      { name: "Waxing Crescent", icon: "🌒", min: 0.0625, max: 0.1875 },
+      { name: "First Quarter",   icon: "🌓", min: 0.1875, max: 0.3125 },
+      { name: "Waxing Gibbous",  icon: "🌔", min: 0.3125, max: 0.4375 },
+      { name: "Full Moon",       icon: "🌕", min: 0.4375, max: 0.5625 },
+      { name: "Waning Gibbous",  icon: "🌖", min: 0.5625, max: 0.6875 },
+      { name: "Last Quarter",    icon: "🌗", min: 0.6875, max: 0.8125 },
+      { name: "Waning Crescent", icon: "🌘", min: 0.8125, max: 0.9375 },
+      { name: "New Moon",        icon: "🌑", min: 0.9375, max: 1.00 }
+    ];
+
+    for (const p of phases) {
+      if (phase >= p.min && phase < p.max) return p;
+    }
+    return phases[0];
+  }
+
+  function update(animate) {
+    const now = new Date();
+    let h = now.getHours();
+    const m = now.getMinutes();
+    const s = now.getSeconds();
+    let ampm = "";
+
+    if (twelve) {
+      ampm = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+    }
+
+    const hs = pad2(h);
+    const ms = pad2(m);
+    const ss = pad2(s);
+
+    setDigit("h0", hs[0], animate);
+    setDigit("h1", hs[1], animate);
+    setDigit("m0", ms[0], animate);
+    setDigit("m1", ms[1], animate);
+    setDigit("s0", ss[0], animate);
+    setDigit("s1", ss[1], animate);
+
+    document.getElementById("day").textContent =
+      now.toLocaleDateString(undefined, { weekday: "long" });
+    document.getElementById("date").textContent =
+      now.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+    document.getElementById("ampm").textContent = twelve ? ampm : "";
+
+    const moon = getMoonPhase(now);
+    document.getElementById("moon-icon").textContent = moon.icon;
+    document.getElementById("moon-name").textContent = moon.name;
+  }
+
+  document.getElementById("switch").addEventListener("click", function () {
+    twelve = !twelve;
+    this.textContent = twelve ? "Use 24-Hour Time" : "Use 12-Hour Time";
+    update(false);
+  });
+
+  update(false);
+  setInterval(() => update(true), 1000);
+})();
+</script>
+</body>
+</html>
